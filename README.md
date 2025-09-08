@@ -58,6 +58,7 @@ SELINUX=disabled
 ```
 
 #### ethtool 설정 및 확인
+ethtool을 이용한 NIC 설정은 다음과 같다.
 ```
 # ethtool -L enp0s3 combined 1
 # ethtool -L enp0s8 combined 1
@@ -90,15 +91,9 @@ Other:          n/a
 ```
 
 #### Pormisc 설정
+ethtool을 이용한 NIC 설정은 다음과 같다.
 ```
-# ethtool -K enp0s3 tso off gso off gro off lro off rxvlan off
-# ethtool -K enp0s8 tso off gso off gro off lro off rxvlan off
+# ip link set enp0s3 promisc on
+# ip link set enp0s8 promisc on
 ```
 
-
-## 개발자
-+ **노권수** : kwonsu@empas.com
-
-```
-dnf 
-```
