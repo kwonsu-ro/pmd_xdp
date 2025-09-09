@@ -22,7 +22,7 @@ Guest OS는 Client, PMD, Server 모두 같은 OS를 사용한다. Client/Server�
 
 ## 3.1. 제약사항
 + Guest OS 네트워크의 어뎁터 종류는 **반가상 네트워크(virtio-net)** 으로 설정한다.
-+ XDP는 Generic Mode로 사용한다. 만약 Netive Mode를 사용할 수 있는 환경이라면 __src/xdp_util.c__ 파일에서 **SKB Mode** 를
++ XDP는 Generic Mode로 사용한다. 만약 **Netive Mode**를 사용할 수 있는 환경이라면 __src/xdp_util.c__ 파일에서 **SKB Mode** 를
   **Netive Mode**로 수정하여 사용한다.
 + Yara를 이용하여 실시간으로 악성코드를 탐지하므로 속도저하가 있을 수 있다.
 
