@@ -90,8 +90,9 @@ Start initialise Yara Rules
             Yara Compile Rule path : /etc/yara/rules/compiled_rules.yarc
 End initialise Yara Rules
 ```
-초기화 스크립트는 NIC의 초기화와 Yara Rule 초기화를 진행한다. </br>
-NIC는 사용자의 환경에 맞게 입력하여 사용한다.
++ 초기화 스크립트는 NIC의 초기화와 Yara Rule 초기화를 진행한다. </br>
++ NIC는 사용자의 환경에 맞게 입력하여 사용한다.</br>
++ Yara Rlue은 script src 디렉토리가 있는 위치에 **yara_rules** 디렉토리를 생성하여 Rule을 컴파일 한다.
 
 ### 4.2.3. 포워딩 설정
 포워딩 설정은 다음과 같다.
