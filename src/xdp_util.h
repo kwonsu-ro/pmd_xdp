@@ -79,7 +79,7 @@ void xsk_recycle_tx_completions(struct xsk_umem_info *pumem);
 
 void xsk_topup_fill_ring(struct xsk_umem_info *pumem);
 
-void xsk_recycle_fill_ring( struct xsk_socket_info *sock, __u64 addr, unsigned int *cnt );
+void xsk_recycle_fill_ring( struct xsk_socket_info *sock, __u64 addr );
 
 void xsk_kick_tx_if_needed(struct xsk_socket_info *psock);
 

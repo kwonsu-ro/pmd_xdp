@@ -230,7 +230,7 @@ void xsk_topup_fill_ring(struct xsk_umem_info *pumem)
 }
 
 // Fill Ring 프래임 재할당 함수
-void xsk_recycle_fill_ring( struct xsk_socket_info *sock, __u64 addr, unsigned int *cnt )
+void xsk_recycle_fill_ring( struct xsk_socket_info *sock, __u64 addr )
 {
 	__u32 idx_f = 0;
 
@@ -248,7 +248,6 @@ void xsk_recycle_fill_ring( struct xsk_socket_info *sock, __u64 addr, unsigned i
 		xsk_frame_free(&sock->umem, addr);
 	}
 
-	(*cnt)++;
 }
 
 

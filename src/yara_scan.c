@@ -58,24 +58,20 @@ static void q_fini(YARA_JOB_QUEUE *q)
     pthread_cond_destroy(&q->cv_not_full);
 }
 
-static void q_push(YARA_JOB_QUEUE *q, const YARA_SCAN_JOB *job) 
+// 논블로킹 try-push: 가득 차면 0 반환, 성공 시 1
+static int q_push(YARA_JOB_QUEUE *q, const YARA_SCAN_JOB *job)
 {
+    int ok = 0;
     pthread_mutex_lock(&q->m);
-
-    while (!q->stop && q->count == YARA_SCAN_QCAP) 
-    {
-        pthread_cond_wait(&q->cv_not_full, &q->m);
-    }
-
-    if (!q->stop) 
-    {
+    if (!q->stop && q->count < YARA_SCAN_QCAP) {
         q->ring[q->tail] = *job;
         q->tail = (q->tail + 1) % YARA_SCAN_QCAP;
         q->count++;
-        pthread_cond_signal(&q->cv_not_empty); // ← 워커를 깨우는 신호
+	pthread_cond_signal(&q->cv_not_empty); // 워커를 깨우는 신호
+        ok = 1;
     }
-
     pthread_mutex_unlock(&q->m);
+    return ok;
 }
 
 static int q_pop(YARA_JOB_QUEUE *q, YARA_SCAN_JOB *out) 
@@ -138,6 +134,11 @@ static void *worker_main(void *arg)
 
         if (job.done) 
 		job.done(match, job.user);
+
+	// 복사형이면 워커가 buf 해제
+	if ( job.buf) {
+		free((void*)job.buf);
+	}
 
         if ( job.out_match && job.sync_m && job.sync_cv && job.sync_done ) 
 	{
@@ -246,6 +247,23 @@ int yara_workers_start(int n_workers)
     return 0;
 }
 
+static void q_drain_and_free_leftovers(YARA_JOB_QUEUE *q) 
+{
+    pthread_mutex_lock(&q->m);
+
+    while (q->count > 0) 
+    {
+        YARA_SCAN_JOB job = q->ring[q->head];
+        q->head = (q->head + 1) % YARA_SCAN_QCAP;
+        q->count--;
+
+        if (job.buf) 
+            free((void*)job.buf);
+    }
+
+    pthread_mutex_unlock(&q->m);
+}
+
 void yara_workers_stop(void) 
 {
     pthread_mutex_lock(&g_q.m);
@@ -265,6 +283,9 @@ void yara_workers_stop(void)
 	    }
     }
 
+    // 남아있는 작업이 있다면 정리
+    q_drain_and_free_leftovers(&g_q);
+
     free(g_workers); 
     g_workers = NULL;
 
@@ -277,8 +298,8 @@ void yara_workers_stop(void)
 }
 
 // -----------------------------------------
-// 공개 API: 비동기 제출(제로카피)
-// - payload 버퍼는 콜백이 끝날 때까지 유효해야 합니다.
+// 공개 API: 동기 제출(제로카피)
+// - payload 버퍼는 콜백이 끝날 때까지 유효
 // -----------------------------------------
 int yara_submit(const uint8_t *payload, size_t len,
                      YARA_SCAN_DONE_CB cb, void *user) 
@@ -304,49 +325,40 @@ int yara_submit(const uint8_t *payload, size_t len,
 }
 
 // -----------------------------------------
-// 공개 API: 동기 제출(완료까지 대기)
+// 공개 API: 비동기 제출(복사형)
+// - non-blocking
 // -----------------------------------------
-int yara_submit_sync(const uint8_t *payload, size_t len, int *out_match) 
+int yara_submit_copy_nb(const uint8_t *payload, size_t len, 
+                        YARA_SCAN_DONE_CB cb, void *user)
 {
-    int done = 0;
-    int match = 0;
+    if (!payload || len == 0)
+        return 0;
+    if (!g_workers || g_worker_cnt <= 0)
+        return -1;
 
-    pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
-    pthread_cond_t  cv = PTHREAD_COND_INITIALIZER;
+    size_t cap = len;
 
-    if (!payload || len == 0) 
-    { 
-	   if (out_match) 
-		   *out_match = 0; 
-	   
-	   return 0; 
+    uint8_t *dup = (uint8_t *)malloc(cap);
+    if (!dup) {
+        // 메모리 부족 → 분석만 스킵(0 또는 -1 반환 정책 중 택1)
+        return -1;
     }
-
-    if (!g_workers || g_worker_cnt <= 0) 
-	    return -1;
+    memcpy(dup, payload, cap);
 
     YARA_SCAN_JOB job = {
-        .buf = payload,
-        .len = len,
-        .done = NULL,
-        .user = NULL,
-        .out_match = &match,
-        .sync_m = &m, .sync_cv = &cv, .sync_done = &done
+        .buf = dup,
+        .len = cap,
+        .done = cb,
+        .user = user,
+        .out_match = NULL,
+        .sync_m = NULL, .sync_cv = NULL, .sync_done = NULL,
     };
 
-    pthread_mutex_lock(&m);
-    q_push(&g_q, &job);
-
-    while (!done) 
-    {
-        pthread_cond_wait(&cv, &m);
+    // 큐가 가득 차면 즉시 실패(-EAGAIN 의미로 -2 사용 가능)
+    if (!q_push(&g_q, &job)) {
+        free(dup);
+        return -2; // EAGAIN 의미
     }
-
-    pthread_mutex_unlock(&m);
-
-    if (out_match) 
-	    *out_match = match;
-
     return 0;
 }
 

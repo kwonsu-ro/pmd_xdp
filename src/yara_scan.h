@@ -68,7 +68,6 @@ typedef struct _yara_job_ctx {
 
     // 환경/함수 포인터(필요 시)
     void *rxp;                     // recycle_fill_ring 호출 시 필요한 컨텍스트
-    unsigned int *consumed_rx;
 
 } YARA_JOB_CTX;
 
@@ -88,16 +87,18 @@ int yara_workers_start(int n_workers);
 void yara_workers_stop(void);
 
 // -----------------------------------------
-// 공개 API: 비동기 제출(제로카피)
+// 공개 API: 동기 제출(제로카피)
 // - payload 버퍼는 콜백이 끝날 때까지 유효해야 합니다.
 // -----------------------------------------
 int yara_submit(const uint8_t *payload, size_t len,
                      YARA_SCAN_DONE_CB cb, void *user);
 
 // -----------------------------------------
-// 공개 API: 동기 제출(완료까지 대기)
+// 공개 API: 비동기 제출(복사형)
+// - non-blocking
 // -----------------------------------------
-int yara_submit_sync(const uint8_t *payload, size_t len, int *out_match);
+int yara_submit_copy_nb(const uint8_t *payload, size_t len,
+                        YARA_SCAN_DONE_CB cb, void *user);
 
 // -----------------------------------------
 // 호환용: 직접 호출 스캔(원하면 사용)
