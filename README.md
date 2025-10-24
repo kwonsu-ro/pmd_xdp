@@ -145,12 +145,12 @@ tcpdump -vvv -i enp0s3 -enn 'arp or ip and port 80'
 ## 6.2. Client
 테스트용 Malware 파일을 생성한다.
 ```
-# echo "malware" > /tmp/malware
+# echo "malicious" > /tmp/malicious
 ```
 
 hping3로 Server(10.10.126.4)의 80 포트에 악성코드 셈플 파일을 전송한다.
 ```
-hping3 --fast -S 10.10.126.4 -p 80 -d 100 -E /tmp/malware
+hping3 --fast -S 10.10.126.4 -p 80 -d 100 -E /tmp/malicious
 HPING 10.10.126.4 (enp0s3 10.10.126.4): S set, 40 headers + 100 data bytes
 [main] memlockall(): No such file or directory
 Warning: can't disable memory paging!
