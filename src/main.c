@@ -193,12 +193,12 @@ static inline void pmd_reuse_ring(struct xsk_socket_info *rxp, struct xsk_socket
 	// Ring 고갈 방지: 틈틈이 드레인/보충
 
 	// RX/TX 소켓에 연결된 Comp Ring 프래임 재회수
-	xsk_recycle_tx_completions(&src->umem);
-	xsk_recycle_tx_completions(&dst->umem);
+	xsk_recycle_tx_completions(&rxp->umem);
+	xsk_recycle_tx_completions(&txp->umem);
 
 	// RX/TX 소켓에 연결된 Fill Ring 프래임 재할당 
-	xsk_topup_fill_ring(&src->umem);
-	xsk_topup_fill_ring(&dst->umem);
+	xsk_topup_fill_ring(&rxp->umem);
+	xsk_topup_fill_ring(&txp->umem);
 }
 
 // 악성코드 분석 비동기 완료 콜백
