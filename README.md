@@ -14,7 +14,9 @@
 위 그림과 같이 Client와 Server 사이에 XDP를 이용하여 enp0s3과 enp0s8 NIC 간의 양방향 통신을 하고 Yara로 패킷의 악성코드를 탐지한다.</br>
 사용하는 환경에 맞게 NIC와 IP설정을 한다.
 > [!IMPORTANT]
-> Client와 Server는 **반드시 PMD를 게이트웨어로 설정**해야 한다.</br>
+> Client와 Server는 **반드시 PMD를 게이트웨어로 설정**해야 한다.
+
+</br>
 
 # 3. 개발환경
 개발환경은 다음과 같다.
