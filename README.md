@@ -14,8 +14,7 @@
 위 그림과 같이 Client와 Server 사이에 XDP를 이용하여 enp0s3과 enp0s8 NIC 간의 양방향 통신을 하고 Yara로 패킷의 악성코드를 탐지한다.</br>
 사용하는 환경에 맞게 NIC와 IP설정을 한다.
 > [!IMPORTANT]
-> Client와 Server는 **반드시 PMD를 게이트웨어로 설정**해야 한다.
-</br></br>
+> Client와 Server는 **반드시 PMD를 게이트웨어로 설정**해야 한다.</br>
 
 # 3. 개발환경
 개발환경은 다음과 같다.
@@ -104,8 +103,8 @@ End initialise Yara Rules
 net.ipv4.ip_forward = 1
 ..........
 ```
+</br>
 
-</br></br>
 # 5. 컴파일 및 실행 방법
 컴파일 및 실행 방법은 다음과 같다.
 
@@ -135,8 +134,8 @@ libbpf: elf: skipping unrecognized data section(6) xdp_metadata
 libbpf: elf: skipping unrecognized data section(6) xdp_metadata
 libbpf: elf: skipping unrecognized data section(6) xdp_metadata
 ```
+</br>
 
-</br></br>
 # 6. 테스트 방법
 테스트 방법은 다음과 갇다.
 
@@ -172,8 +171,8 @@ FORWARD Packet:PROTO:[TCP] SRC:(00:00:00:00:00:1c) [10.10.126.4:80] --> DST:(00:
 [MAC] IP:10.10.56.102 의 MAC을 갱신했습니다. MAC: 00:00:00:00:00:52
 DROP 1 Packet:PROTO:[TCP] SRC:(00:00:00:00:00:52) [10.10.56.102:1365] --> DST:(00:00:00:00:00:84) [10.10.126.4:80]
 ```
+</br>
 
-</br></br>
 # 참고
 악성코드 탐지 시 같은 Client에서 같은 Server의 포트로 계속 악성코드가 유입되는 경우 차단 유지 시간을 갱신하여 계속 차단된다.</br>
 악성코드 차단 유지 시간이 해제되는 시간은 60초로 되있고 이시간 동안 Client에서 같은 Server의 포트로 악성코드가 유입되지 않아야 통신이 가능한다.</br>
@@ -182,8 +181,8 @@ DROP 1 Packet:PROTO:[TCP] SRC:(00:00:00:00:00:52) [10.10.56.102:1365] --> DST:(0
 35 // Blocklist 메크로
 36 #define BLOCK_DURATION_SEC 60  // 60초 후 자동 해제
 ```
+</br>
 
-</br></br>
 # 마무리
 본 소스코드는 실시간으로 악성코드를 탐지하는 다양한 방법 중에 하나를 선택하여 간단한 방법으로 패킷을 대상으로 실시간으로 악성코드 탐지하는 방법을 사용한다.</br>
 본 소스코드를 사용시 속도저하, 오탐 발생, 고속 패킷 전송 시 패킷 유실이 발생할 수 있으며 발생하는 피해는 모두 사용자에게 책임이 있다.</br>
